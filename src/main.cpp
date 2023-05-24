@@ -22,8 +22,19 @@ int fill_col_arr(py::list py_args, void **col_arr, size_t *col_lens, uint8_t *co
             memcpy(col_arr[col_idx], s.c_str(), s.length());
             col_lens[col_idx] = s.length();
             col_types[col_idx] = 13;
-            //col_arr[col_idx][s.length()] = '\0';
             est_len += s.length();
+        } else if (py::isinstance<py::bytes>(item)) {
+            char *data;
+            Py_ssize_t size;
+            if (PyBytes_AsStringAndSize(item.ptr(), &data, &size) == -1) {
+                // error handling code
+            } else {
+                col_arr[col_idx] = (void *) malloc(size);
+                memcpy(col_arr[col_idx], data, size);
+                col_lens[col_idx] = size;
+                col_types[col_idx] = 13;
+                est_len += size;
+            }
         } else if (py::isinstance<py::int_>(item)) {
             int i = py::cast<int>(item);
             col_arr[col_idx] = (void *) malloc(sizeof(int));
